@@ -687,7 +687,7 @@ namespace pv
         GVariant *gvar;
         gsize num_opts;
 
-        QString title = QApplication::applicationName() + " v" + QApplication::applicationVersion();
+        QString title = QApplication::applicationDisplayName() + " v" + QApplication::applicationVersion();
 
         QJsonArray channelVar;
         sessionVar["Version"] = QJsonValue::fromVariant(SESSION_FORMAT_VERSION);
@@ -2171,7 +2171,7 @@ namespace pv
     void MainWindow::update_title_bar_text()
     {
           // Set the title
-        QString title = QApplication::applicationName() + " v" + QApplication::applicationVersion();
+        QString title = QApplication::applicationDisplayName() + " v" + QApplication::applicationVersion();
         AppConfig &app = AppConfig::Instance();
 
         if (_title_ext_string != "" && app.appOptions.displayProfileInBar){

@@ -27,7 +27,7 @@ project(DSView)
 #= Config Header
 #-------------------------------------------------------------------------------
 
-set(DS_TITLE DSView)
+set(DS_TITLE PXLogic-DSView)
 set(DS_DESCRIPTION "A GUI for instruments of DreamSourceLab")
 
 set(DS_VERSION_MAJOR 1)
@@ -696,7 +696,7 @@ if(APPLE)
         MACOSX_BUNDLE TRUE
         RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
         MACOSX_BUNDLE_GUI_IDENTIFIER com.pxlogic.${PROJECT_NAME}
-        MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+        MACOSX_BUNDLE_BUNDLE_NAME ${DS_TITLE}
         MACOSX_BUNDLE_BUNDLE_VERSION ${DS_VERSION_STRING}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${DS_VERSION_STRING}
         MACOSX_BUNDLE_ICON_FILE DSView.icns
@@ -728,6 +728,24 @@ if(APPLE)
 
     # Adding icon via add_executable / target_sources does not work, hack around this
     install(FILES DSView.icns DESTINATION ${MAC_RES_PREFIX})
+
+    # QIcon loads the toolbar SVG assets through Qt's icon-engine plugin.  Keep
+    # the minimal set of runtime plugins in the bundle so a deployed app has
+    # the same icons and animated wait indicators as a development build.
+    set(MAC_PLUGIN_PREFIX ${PROJECT_NAME}.app/Contents/PlugIns)
+    function(install_qt_bundle_plugin plugin_target plugin_subdir)
+        if(NOT TARGET ${plugin_target})
+            message(FATAL_ERROR "Required macOS Qt plugin is unavailable: ${plugin_target}")
+        endif()
+        install(FILES "$<TARGET_FILE:${plugin_target}>"
+            DESTINATION ${MAC_PLUGIN_PREFIX}/${plugin_subdir})
+    endfunction()
+
+    install_qt_bundle_plugin(Qt6::QCocoaIntegrationPlugin platforms)
+    install_qt_bundle_plugin(Qt6::QMacStylePlugin styles)
+    install_qt_bundle_plugin(Qt6::QSvgIconPlugin iconengines)
+    install_qt_bundle_plugin(Qt6::QSvgPlugin imageformats)
+    install_qt_bundle_plugin(Qt6::QGifPlugin imageformats)
 else()
     install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 endif()

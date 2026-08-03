@@ -172,6 +172,7 @@ bool bHighScale = true;
     // Set some application metadata
     QApplication::setApplicationVersion(DS_VERSION_STRING);
     QApplication::setApplicationName("DSView");
+    QApplication::setApplicationDisplayName(DS_TITLE);
     QApplication::setOrganizationName("DreamSourceLab");
     QApplication::setOrganizationDomain("www.DreamSourceLab.com");
 
