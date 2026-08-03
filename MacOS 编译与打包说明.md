@@ -1,6 +1,6 @@
 # 苹果电脑编译与打包说明
 
-本文主要说明如何在苹果芯片电脑上编译 PXLogic-DSView，并生成可分发的 `PXLogic-DSView-1.3.2-macOS-arm64.dmg`。
+本文说明如何在苹果芯片电脑上编译 PXLogic-DSView，并生成可分发的 `PXLogic-DSView-1.3.2-macOS-arm64.dmg`。
 
 ## 适用范围
 
