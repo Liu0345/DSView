@@ -436,7 +436,7 @@ SRD_API int srd_lib_version_revision_get(void);
 SRD_API int srd_lib_version_age_get(void);
 SRD_API const char *srd_lib_version_string_get(void);
 
-#include "version.h"
+#include "srd_version.h"
 
 #ifdef __cplusplus
 }

@@ -24,6 +24,14 @@
 #include <glib.h>
 #include "log.h"
 
+/* The monolithic DSView CMake target also generates a config.h for the GUI.
+ * When that header is found first, the autotools PACKAGE_TARNAME definition
+ * from libsigrokdecode is unavailable.  Keep the decoder data directory
+ * deterministic for that build layout. */
+#ifndef PACKAGE_TARNAME
+#define PACKAGE_TARNAME "libsigrokdecode4DSL"
+#endif
+
 /** @cond PRIVATE */
 
 /* Python module search paths */
@@ -205,6 +213,12 @@ SRD_API int srd_init(const char *path)
 	PyImport_AppendInittab("sigrokdecode", PyInit_sigrokdecode);
 
 	/* Initialize the Python interpreter. */
+#ifdef __APPLE__
+	/* The decoders live inside the signed app bundle. Keep Python from
+	 * modifying that bundle and from importing user-installed packages. */
+	g_setenv("PYTHONDONTWRITEBYTECODE", "1", TRUE);
+	g_setenv("PYTHONNOUSERSITE", "1", TRUE);
+#endif
     Py_InitializeEx(0); 
 
 #ifdef DECODERS_DIR

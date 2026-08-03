@@ -45,12 +45,13 @@
 
 if (LIBUSB_1_LIBRARIES AND LIBUSB_1_INCLUDE_DIRS)
   # in cache already
-  set(LIBUSB_FOUND TRUE)
+  set(LIBUSB_1_FOUND TRUE)
 else (LIBUSB_1_LIBRARIES AND LIBUSB_1_INCLUDE_DIRS)
   find_path(LIBUSB_1_INCLUDE_DIR
     NAMES
 	    libusb.h
     PATHS
+      /opt/homebrew/include
       /usr/local/include
       /opt/local/include
       /usr/include
@@ -63,6 +64,8 @@ else (LIBUSB_1_LIBRARIES AND LIBUSB_1_INCLUDE_DIRS)
     NAMES
       usb-1.0 usb
     PATHS
+      /opt/homebrew/lib64
+      /opt/homebrew/lib
       /usr/local/lib64
       /opt/local/lib64
       /usr/lib64

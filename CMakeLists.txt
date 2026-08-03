@@ -19,7 +19,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.16)
 
 project(DSView)
 
@@ -176,12 +176,13 @@ include_directories(${ZLIB_INCLUDE_DIRS})
 #===============================================================================
 #= Qt5 or Qt6
 #-------------------------------------------------------------------------------
-if(APPLE)
-	set(QT_VERSION_FORCE Qt6)
-endif()
-
-
 set(QT_VERSION_FORCE "" CACHE STRING "Force the use of Qt6 by setting this option to 6")
+
+if(APPLE)
+	# Homebrew provides a native Qt 6 build on Apple Silicon.  Keep the macOS
+	# build on one well-tested Qt API instead of accidentally selecting Qt 5.
+	set(QT_VERSION_FORCE "6" CACHE STRING "Force the Qt major version" FORCE)
+endif()
 
 if(NOT QT_VERSION_FORCE OR "${QT_VERSION_FORCE}" STREQUAL "5")
 	find_package(Qt5Core QUIET)
@@ -549,7 +550,7 @@ set(libsigrokdecode4DSL_HEADERS
     libsigrokdecode4DSL/libsigrokdecode-internal.h
     libsigrokdecode4DSL/libsigrokdecode.h
     libsigrokdecode4DSL/config.h
-    libsigrokdecode4DSL/version.h
+    libsigrokdecode4DSL/srd_version.h
 )
 
 #===============================================================================
@@ -614,8 +615,11 @@ if(NOT DISABLE_WERROR)
         add_definitions(-Werror)
 endif()
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 
 include_directories(
@@ -690,11 +694,11 @@ if(APPLE)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         BUNDLE TRUE
         MACOSX_BUNDLE TRUE
+        RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
         MACOSX_BUNDLE_GUI_IDENTIFIER com.pxlogic.${PROJECT_NAME}
         MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
         MACOSX_BUNDLE_BUNDLE_VERSION ${DS_VERSION_STRING}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${DS_VERSION_STRING}
-        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/mac_appbundle_template.plist.in
         MACOSX_BUNDLE_ICON_FILE DSView.icns
     )
 endif()
@@ -704,8 +708,12 @@ if(ENABLE_COTIRE)
 	cotire(${PROJECT_NAME})
 endif()
 
-message(STATUS "Output dir: ${CMAKE_CURRENT_SOURCE_DIR}/build.dir")
-set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build.dir")
+if(APPLE)
+    message(STATUS "Output dir: ${PROJECT_BINARY_DIR}/bin")
+else()
+    message(STATUS "Output dir: ${CMAKE_CURRENT_SOURCE_DIR}/build.dir")
+    set(EXECUTABLE_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build.dir")
+endif()
 
 #===============================================================================
 #= Installation
@@ -716,7 +724,7 @@ if(APPLE)
     install(TARGETS ${PROJECT_NAME} BUNDLE DESTINATION .)
 
     # Normally resources in macOS app bundle are packed at Contents/Resources
-    set(MAC_RES_PREFIX ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.app/Contents/Resources/)
+    set(MAC_RES_PREFIX ${PROJECT_NAME}.app/Contents/Resources/)
 
     # Adding icon via add_executable / target_sources does not work, hack around this
     install(FILES DSView.icns DESTINATION ${MAC_RES_PREFIX})
@@ -777,5 +785,3 @@ if(ENABLE_TESTS)
 	enable_testing()
 	add_test(test ${CMAKE_CURRENT_BINARY_DIR}/DSView/test/DSView-test)
 endif(ENABLE_TESTS)
-
-

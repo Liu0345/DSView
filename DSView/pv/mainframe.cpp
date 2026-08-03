@@ -1106,7 +1106,11 @@ QWidget* MainFrame::GetBodyView()
     return _mainWindow->GetBodyView();
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool MainFrame::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+#else
 bool MainFrame::nativeEvent(const QByteArray &eventType, void *message, long *result)
+#endif
 {
 #ifdef _WIN32
 
@@ -1123,7 +1127,11 @@ bool MainFrame::nativeEvent(const QByteArray &eventType, void *message, long *re
             case WM_NCLBUTTONDBLCLK:
             case WM_NCHITTEST:
             {
-                *result = long(SendMessageW(hwnd, 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                *result = qintptr(SendMessageW(hwnd,
+#else
+                *result = long(SendMessageW(hwnd,
+#endif
                         msg->message, msg->wParam, msg->lParam));
                 return true;
             }           
@@ -1132,12 +1140,7 @@ bool MainFrame::nativeEvent(const QByteArray &eventType, void *message, long *re
     
 #endif
 
-#ifdef Q_OS_DARWIN
-    return QWidget::nativeEvent(eventType, message, (long long *)result);
-#else
     return QWidget::nativeEvent(eventType, message, result);
-#endif
-    //return QWidget::nativeEvent(eventType, message, (long long *)result);
 }
 
 } // namespace pv

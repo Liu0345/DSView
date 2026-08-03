@@ -104,6 +104,19 @@ bool AppControl::Init()
     }
   
 #endif
+
+#if defined(Q_OS_DARWIN)
+    // Use the Python runtime bundled in DSView.app so protocol decoders do not
+    // depend on a Homebrew installation on the target Mac.
+    const QString pythonHome = QDir::cleanPath(
+        QCoreApplication::applicationDirPath() +
+        "/../Frameworks/Python.framework/Versions/3.11");
+    if (QDir(pythonHome).exists("lib/python3.11")) {
+        static std::wstring bundledPythonHome;
+        bundledPythonHome = pythonHome.toStdWString();
+        srd_set_python_home(bundledPythonHome.c_str());
+    }
+#endif
     
     //the python script path of decoder
     char path[256] = {0};
