@@ -351,6 +351,7 @@ private:
     void get_scroll_layout(int64_t &length, int64_t &offset);	
 	void update_scroll();
     void update_margins();   
+    void update_view_layout();
     void set_scale(double scale);
 
     void clear();
@@ -483,6 +484,7 @@ private:
     bool        _dso_auto;
     bool        _show_lissajous;
     bool        _back_ready;
+    bool        _layout_update_pending;
     DeviceAgent *_device_agent;
 };
 

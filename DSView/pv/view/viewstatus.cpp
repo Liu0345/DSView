@@ -25,11 +25,13 @@
 #include <QPainter>
 #include <QStyleOption>
 #include <QMouseEvent>
+#include <QResizeEvent>
 #include <QBitmap>
 #include <QJsonObject>
 #include <QJsonArray>
 
 #include "../view/trace.h"
+#include "dsosignal.h"
 #include "../sigsession.h"
 #include "../view/view.h"
 #include "../view/trace.h"
@@ -158,13 +160,14 @@ void ViewStatus::reload()
 
     if (_session->get_device()->get_work_mode() == DSO)
     {
-        const double width = _view.get_view_width() * 1.0 / COLUMN;
+        // Use our own current geometry, not a viewport that may still be resizing.
+        const double width = qMax(0, this->width() - DsoSignal::RightMargin) * 1.0 / COLUMN;
         const int height = (this->height() - 2*MARGIN) / ROW;
 
         for (size_t i  = 0; i < COLUMN*ROW; i++) {
             QRect rect(this->rect().left() + (i%COLUMN)*width,
                        this->rect().top() + (i/COLUMN+1)*MARGIN + (i/COLUMN)*height,
-                       width-MARGIN, height);
+                       qMax(0, int(width)-MARGIN), qMax(0, height));
 
             if (_mrects.size() <= i) {
                 std::tuple<QRect, int, enum DSO_MEASURE_TYPE> rect_tuple;
@@ -179,6 +182,12 @@ void ViewStatus::reload()
         }
     }
     update();
+}
+
+void ViewStatus::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    reload();
 }
 
 void ViewStatus::repeat_unshow()

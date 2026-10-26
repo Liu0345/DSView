@@ -27,6 +27,7 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QScrollBar>
+#include <QTimer>
 #include <algorithm>
 
 #include "groupsignal.h"
@@ -97,7 +98,8 @@ View::View(SigSession *session, pv::toolbars::SamplingBar *sampling_bar, QWidget
     _hover_point(-1, -1),
     _dso_auto(true),
     _show_lissajous(false),
-    _back_ready(false)
+    _back_ready(false),
+    _layout_update_pending(false)
 {  
    _trig_cursor = NULL;
    _search_cursor = NULL;
@@ -844,6 +846,19 @@ void View::signals_changed(const Trace* eventTrace)
 bool View::eventFilter(QObject *object, QEvent *event)
 {
 	const QEvent::Type type = event->type();
+
+    if (type == QEvent::Resize &&
+        (object == _time_viewport || object == _fft_viewport) &&
+        !_layout_update_pending) {
+        // Child viewports reach their final size after the parent's resize event.
+        // Coalesce layout changes so cold-start hardware uses the settled geometry.
+        _layout_update_pending = true;
+        QTimer::singleShot(0, this, [this]() {
+            _layout_update_pending = false;
+            update_view_layout();
+        });
+    }
+
 	if (type == QEvent::MouseMove) {
 		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
         if (object == _ruler || object == _time_viewport || object == _fft_viewport) {
@@ -907,7 +922,13 @@ int View::headerWidth()
     return headerWidth;
 }
 
-void View::resizeEvent(QResizeEvent*)
+void View::resizeEvent(QResizeEvent *event)
+{
+    QScrollArea::resizeEvent(event);
+    update_view_layout();
+}
+
+void View::update_view_layout()
 {
     int width = get_view_width();
 
