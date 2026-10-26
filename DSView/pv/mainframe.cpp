@@ -231,13 +231,8 @@ void MainFrame::MoveBegin()
  
 void MainFrame::MoveEnd()
 {
-    QRect rc = GetFormRegion();
-
-    if (rc.top() < 0){
-        dsv_info("The top is out of range.");
-        rc.setY(0);
-        SetFormRegion(rc.x(), rc.y(), rc.width(), rc.height());
-    }
+    // Displays above the primary screen have valid negative Y coordinates.
+    // Keep the geometry unchanged: QRect::setY() also changes its height.
 
 #ifndef _WIN32
     saveNormalRegion();
@@ -649,9 +644,8 @@ void MainFrame::ShowFormInit()
 { 
     ReadSettings();
 
-    if (_initWndInfo.r.y < 0){
-        _initWndInfo.r.y = 0;
-    }
+    // ReadSettings() already checks visibility against the selected screen.
+    // Preserve negative coordinates when restoring a window on an upper display.
 
     int x = _initWndInfo.r.x;
     int y = _initWndInfo.r.y;
